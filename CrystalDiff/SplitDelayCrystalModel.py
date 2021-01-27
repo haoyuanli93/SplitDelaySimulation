@@ -1,9 +1,6 @@
-import sys
 import numpy as np
 from scipy.spatial.transform import Rotation
 import copy
-
-sys.path.append(r"C:\Users\haoyuan\Documents\GitHub\Silica")
 
 from CrystalDiff import lclsutil, crystal, lightpath
 
