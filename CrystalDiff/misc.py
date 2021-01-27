@@ -1,30 +1,8 @@
 import datetime
 import time
 
-import h5py as h5
 import numpy as np
 import matplotlib.pyplot as plt
-
-
-########################################################################################################################
-#                    For I/O operation
-########################################################################################################################
-def save_branch_result_to_h5file(file_name, io_type, branch_name,
-                                 result_3d_dict, result_2d_dict, check_dict):
-    with h5.File(file_name, io_type) as h5file:
-        group = h5file.create_group(branch_name)
-        # Save the meta data
-        group_check = group.create_group('check')
-        for entry in list(check_dict.keys()):
-            group_check.create_dataset(entry, data=check_dict[entry])
-
-        group_2d = group.create_group('result_2d')
-        for entry in list(result_2d_dict.keys()):
-            group_2d.create_dataset(entry, data=result_2d_dict[entry])
-
-        group_3d = group.create_group('result_3d')
-        for entry in list(result_3d_dict.keys()):
-            group_3d.create_dataset(entry, data=result_3d_dict[entry])
 
 
 def time_stamp():

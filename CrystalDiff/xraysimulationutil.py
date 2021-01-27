@@ -872,22 +872,6 @@ def align_grating_normal_direction(grating, axis):
                              ref_point=grating.surface_point)
 
 
-def align_telescope_optical_axis(telescope, axis):
-    # 1 Get the angle
-    cos_val = np.dot(axis, telescope.lens_axis) / l2_norm(axis) / l2_norm(telescope.lens_axis)
-    rot_angle = np.arccos(cos_val)
-
-    # 2 Try the rotation
-    rot_mat = rot_mat_in_yz_plane(theta=rot_angle)
-    new_h = np.dot(rot_mat, telescope.lens_axis)
-
-    if np.dot(new_h, axis) < 0:
-        rot_mat = rot_mat_in_yz_plane(theta=rot_angle + np.pi)
-
-    telescope.rotate_wrt_point(rot_mat=rot_mat,
-                               ref_point=telescope.lens_point)
-
-
 # --------------------------------------------------------------------------------------------------------------
 #       Wrapper functions for different devices
 # --------------------------------------------------------------------------------------------------------------
@@ -968,46 +952,6 @@ def get_intensity_efficiency_sigma_polarization(device, kin):
 
     if device.type == "Transmission Telescope for CPA":
         return np.square(np.abs(device.efficiency))
-
-
-#########################################################
-#   Reshape the array
-#########################################################
-def bin_ndarray(ndarray, new_shape, operation='sum'):
-    """
-    Bins an ndarray in all axes based on the target shape, by summing or
-        averaging.
-
-    Number of output dimensions must match number of input dimensions and
-        new axes must divide old ones.
-
-    Example
-    -------
-    # >>> m = np.arange(0,100,1).reshape((10,10))
-    # >>> n = bin_ndarray(m, new_shape=(5,5), operation='sum')
-    # >>> print(n)
-
-    [[ 22  30  38  46  54]
-     [102 110 118 126 134]
-     [182 190 198 206 214]
-     [262 270 278 286 294]
-     [342 350 358 366 374]]
-
-    """
-    operation = operation.lower()
-    if not (operation in ['sum', 'mean']):
-        raise ValueError("Operation not supported.")
-    if ndarray.ndim != len(new_shape):
-        raise ValueError("Shape mismatch: {} -> {}".format(ndarray.shape,
-                                                           new_shape))
-    compression_pairs = [(tmp1, tmp2 // tmp1) for tmp1, tmp2 in zip(new_shape,
-                                                                    ndarray.shape)]
-    flattened = [tmp1 for tmp2 in compression_pairs for tmp1 in tmp2]
-    ndarray = ndarray.reshape(flattened)
-    for i in range(len(new_shape)):
-        op = getattr(ndarray, operation)
-        ndarray = op(-1 * (i + 1))
-    return ndarray
 
 
 #####################################################################

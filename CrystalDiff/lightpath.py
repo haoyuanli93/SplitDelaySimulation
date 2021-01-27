@@ -282,16 +282,3 @@ def get_light_trajectory_with_total_path(kin_vec,
                            kout_array[-1] * remain_path / util.l2_norm(kout_array[-1]))
 
     return intersect_array, kout_array
-
-
-##########################################################################
-#       Create Delay time
-##########################################################################
-
-def get_distance_for_delay_time():
-    """
-    There, I would like to calculate the distance over which I need to move to change
-    the delay time.
-    :return:
-    """
-    pass

@@ -94,20 +94,6 @@ def get_lightpath(device_list, kin, initial_point, final_plane_point, final_plan
             # Find the wave vecotr
             kout_list.append(kout_list[-1] + device.momentum_transfer)
 
-        if device.type == "Transmission Telescope for CPA":
-            intersection_list.append(
-                xraysimulationutil.get_image_from_telescope_for_cpa(object_point=intersection_list[-1],
-                                                                    lens_axis=device.lens_axis,
-                                                                    lens_position=device.lens_position,
-                                                                    focal_length=device.focal_length))
-            # Find the path length
-            # displacement = intersection_list[-1] - intersection_list[-2]
-            # path_length += np.dot(displacement, kout_list[-1]) / xraysimulationutil.l2_norm(kout_list[-1])
-
-            # Find the output wave vector
-            kout_list.append(xraysimulationutil.get_telescope_kout(optical_axis=device.lens_axis,
-                                                                   kin=kout_list[-1]))
-
     ################################################################
     # Step 3: Find the output position on the observation plane
     intersection_list.append(xraysimulationutil.get_intersection(initial_position=intersection_list[-1],
@@ -179,30 +165,6 @@ def get_trajectory(device_list, kin, initial_point, final_plane_point, final_pla
 
             # Find the wave vecotr
             kout_list.append(kout_list[-1] + device.momentum_transfer)
-
-        if device.type == "Transmission Telescope for CPA":
-            # Find the intersection with the first lens
-            intersection_list.append(xraysimulationutil.get_intersection(initial_position=intersection_list[-1],
-                                                                         k=kout_list[-1],
-                                                                         normal=device.lens_axis,
-                                                                         surface_point=device.lens_position))
-
-            # Find the image
-            image = xraysimulationutil.get_image_from_telescope_for_cpa(object_point=intersection_list[-1],
-                                                                        lens_axis=device.lens_axis,
-                                                                        lens_position=device.lens_position,
-                                                                        focal_length=device.focal_length)
-
-            # Find the kout
-            kout_list.append(xraysimulationutil.get_telescope_kout(optical_axis=device.lens_axis,
-                                                                   kin=kout_list[-1]))
-
-            # Find the intersection on the second lens
-            point_on_seond_lens = device.lens_position + 2 * device.focal_length * device.lens_axis
-            intersection_list.append(xraysimulationutil.get_intersection(initial_position=image,
-                                                                         k=kout_list[-1],
-                                                                         normal=device.lens_axis,
-                                                                         surface_point=point_on_seond_lens))
 
     ################################################################
     # Step 3: Find the output position on the observation plane
