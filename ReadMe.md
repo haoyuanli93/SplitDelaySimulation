@@ -15,7 +15,8 @@ The critical python dependence for this package is the following:
 2. Numba
 3. pyculib
 
-One needs a GPU to run this simulation with this package.
+The other dependence is routine and super easy to solve.
+Besides, one needs an Nvidia GPU to run this simulation with this package.
 
 # Warning
 I have tried to reproduce this simulation with my latest X-ray simulation
