@@ -23,14 +23,8 @@ The basic unit of this simulation is um, fs, and keV.
 All parameters feed into this simulation or quantities calculated
 from this simulation should follow this unit.
 
-Another thing to be mentioned is the "wave number".
-Aside from file "xraysimulationutil.py", the wavenumber is defined to be
+Another thing to be mentioned is the "wave number". The wavenumber is defined to be
     pi * 2 / wavelength.
-
-In file "xraysimulationutil.py", the wavenumber is defined to be 
-    1 / wavelength.
-
-I might fix this sometime in the future. It is not guaranteed that I'll do that.
 
 # Warning
 I have tried to reproduce this simulation with my latest X-ray simulation
@@ -39,7 +33,7 @@ Therefore, I gave up.
 
 Instead, I copy some file from my new repo XRaySimulation to the CrystalDiff folder
 and just managed to update this simulation a little bit. Therefore, the code in the 
-following files: "xraysimulationutil.py", "misc.py", "multidevice.py"
+following files: "misc.py", "multidevice.py"
 and "SplitDelayCrystalModel.py",
 is just some external code that does not necessarily work well with the other code.
 

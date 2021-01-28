@@ -8,6 +8,8 @@ import numpy as np
 This module is the lowest-level module. It does not depend on another modules.
 """
 pi = np.pi
+two_pi = 2. * np.pi
+
 hbar = 0.0006582119514  # This is the reduced planck constant in keV/fs
 
 c = 299792458. * 1e-9  # The speed of light in um / fs
@@ -162,9 +164,9 @@ def get_total_path_length(intersect_list):
     """
     number = len(intersect_list)
     total_path = 0.
-    for l in range(number - 1):
-        total_path += l2_norm(intersect_list[l + 1] -
-                              intersect_list[l])
+    for x in range(number - 1):
+        total_path += l2_norm(intersect_list[x + 1] -
+                              intersect_list[x])
 
     return total_path
 
@@ -518,46 +520,51 @@ def get_rocking_curve(kin_list, crystal_list):
 #
 ###############################################################################################
 ###############################################################################################
-def get_square_grating_transmission(k, m, n, h, a, b, base=0.):
-    """
-    k: Wave number of the photon = 2 * pi * c / lambda
-    m: The order of diffraction
-    n: The complex refraction index.
-    h: The height of the tooth.
-    a: The width of the groove.
-    b: The width of the tooth.
-    """
+def get_square_grating_transmission(kin, height_vec, ab_ratio, base, refractive_index, order, grating_k):
+    # The argument for exp(ik(n-1)h)
+    nhk = np.dot(height_vec, kin).astype(np.complex128) * (refractive_index - complex(1.))
 
-    if not isinstance(m, int):
-        raise Exception("m is the order of diffraction. This value has to be an integer.")
-    if not isinstance(n, complex):
-        raise Exception("n is the complex refraction index. This value has to be a complex number.")
+    # The argument for exp(ik(n-1)t) for the phase different and absorption from
+    # the base of the grating
+    thick_k_n = np.dot(base, kin).astype(np.complex128) * (refractive_index - complex(1.))
 
-    # First consider diffractions that are not the zeroth order.
-    if m != 0:
-        # Get the real part and the imaginary part of the refraction coefficient
-        n_re = n.real - 1
-        n_im = n.imag
+    first_factor = complex(1.
+                           - np.cos(two_pi * order * ab_ratio),
+                           - np.sin(two_pi * order * ab_ratio))
+    second_factor = complex(1.) - complex(np.exp(-nhk.imag) * np.cos(nhk.real),
+                                          np.exp(-nhk.imag) * np.sin(nhk.real))
 
-        term_1 = 1 - np.exp(-k * h * n_im) * (np.cos(k * h * n_re) + 1.j * np.sin(k * h * n_re))
-        term_2 = 1 - np.cos(2 * np.pi * b * m / (a + b)) + np.sin(2 * np.pi * b * m / (a + b))
+    # Factor from the base
+    factor_base = complex(np.cos(thick_k_n.real) * np.exp(-thick_k_n.imag),
+                          np.sin(thick_k_n.real) * np.exp(-thick_k_n.imag))
 
-        transmission = np.square(np.abs(term_1 * term_2)) / (4 * (np.pi * m) ** 2)
-        transmission *= np.exp(- 2 * k * base * n_im)
+    factor = 1.j / complex(2. * np.pi * order) * first_factor * second_factor * factor_base
 
-        # Then consider the zeroth order
-    else:
-        # Get the real part and the imaginary part of the refraction coefficicent
-        n_re = n.real - 1
-        n_im = n.imag
+    # Step 3: Update the momentum and the length of the momentum
+    kout = kin + order * grating_k
+    klen = l2_norm(kout)
 
-        term_1 = (b + a * np.exp(-k * h * n_im) * (np.cos(k * h * n_re) +
-                                                   1.j * np.sin(k * h * n_re))) / (a + b)
+    return factor, kout, klen
 
-        transmission = np.square(np.abs(term_1))
-        transmission *= np.exp(- 2 * k * base * n_im)
 
-    return transmission
+def get_square_grating_0th_transmission(kin, height_vec, refractive_index, ab_ratio, base):
+    # The argument for exp(ik(n-1)h)
+    nhk = np.dot(height_vec, kin).astype(np.complex128) * (refractive_index - complex(1.))
+
+    # The argument for exp(ik(n-1)t) for the phase different and absorption from
+    # the base of the grating
+    thick_k_n = np.dot(base, kin).astype(np.complex128) * (refractive_index - complex(1.))
+
+    # Factor from the base
+    factor_base = complex(np.cos(thick_k_n.real) * np.exp(-thick_k_n.imag),
+                          np.sin(thick_k_n.real) * np.exp(-thick_k_n.imag))
+
+    pre_factor = complex(1.) - complex(np.exp(-nhk.imag) * np.cos(nhk.real),
+                                       np.exp(-nhk.imag) * np.sin(nhk.real))
+
+    factor = (complex(1.) - complex(ab_ratio) * pre_factor) * factor_base
+
+    return factor
 
 
 ########################################################################################################################
@@ -944,3 +951,77 @@ def get_forward_laue_reflection_array(kin_grid, d, h, n,
     reflect_p = factor1 * factor2
 
     return reflect_s, reflect_p, b, kin_grid
+
+
+#######################################################################################################################
+#                 Code from new package XRaySimulation
+#######################################################################################################################
+def get_kout(device, kin):
+    """
+    Get the output wave vector given the incident wave vector
+
+    :param device:
+    :param kin:
+    :return:
+    """
+    # Get output wave vector
+    if device.type == "Crystal: Bragg Reflection":
+        kout = get_bragg_kout(kin=kin,
+                              h=device.h,
+                              normal=device.normal)
+        return kout
+
+    if device.type == "Transmissive Grating":
+        kout = kin + device.momentum_transfer
+        return kout
+
+
+def get_intensity_efficiency_sigma_polarization(device, kin):
+    """
+    Get the output intensity efficiency for the given wave vector
+    assuming a monochromatic plane incident wave.
+
+    :param device:
+    :param kin:
+    :return:
+    """
+    # Get output wave vector
+    if device.type == "Crystal: Bragg Reflection":
+        tmp = np.zeros((1, 3))
+        tmp[0, :] = kin
+
+        (reflect_s,
+         reflect_p,
+         b,
+         kout_grid) = get_bragg_reflection_array(kin_grid=tmp,
+                                                 d=device.thickness,
+                                                 h=device.h,
+                                                 n=device.normal,
+                                                 chi0=device.chi0,
+                                                 chih_sigma=device.chih_sigma,
+                                                 chihbar_sigma=device.chihbar_sigma,
+                                                 chih_pi=device.chih_pi,
+                                                 chihbar_pi=device.chihbar_pi)
+
+        efficiency = np.square(np.abs(reflect_s)) / np.abs(b)
+        return efficiency
+
+    if device.type == "Transmissive Grating":
+
+        # Determine the grating order
+        if device.order == 0:
+            efficiency = get_square_grating_0th_transmission(kin=kin,
+                                                             height_vec=device.h,
+                                                             refractive_index=device.n,
+                                                             ab_ratio=device.ab_ratio,
+                                                             base=device.thick_vec)
+        else:
+            efficiency, _, _ = get_square_grating_transmission(kin=kin,
+                                                               height_vec=device.h,
+                                                               ab_ratio=device.ab_ratio,
+                                                               base=device.thick_vec,
+                                                               refractive_index=device.n,
+                                                               order=device.order,
+                                                               grating_k=device.momentum_transfer)
+        # Translate to the intensity efficiency
+        return np.square(np.abs(efficiency))

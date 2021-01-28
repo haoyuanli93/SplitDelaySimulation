@@ -1,6 +1,6 @@
 import numpy as np
 
-from CrystalDiff import xraysimulationutil
+from CrystalDiff import util
 
 two_pi = 2. * np.pi
 
@@ -29,8 +29,8 @@ def get_kout(device_list, kin):
         device = device_list[idx]
 
         # Get the output wave vector
-        kout_list[idx + 1] = xraysimulationutil.get_kout(device=device,
-                                                         kin=kout_list[idx])
+        kout_list[idx + 1] = util.get_kout(device=device,
+                                           kin=kout_list[idx])
 
     return kout_list
 
@@ -69,40 +69,40 @@ def get_lightpath(device_list, kin, initial_point, final_plane_point, final_plan
         ###############################################################
         # Step 2: Find the intersection and kout
         if device.type == "Crystal: Bragg Reflection":
-            intersection_list.append(xraysimulationutil.get_intersection(initial_position=intersection_list[-1],
-                                                                         k=kout_list[-1],
-                                                                         normal=device.normal,
-                                                                         surface_point=device.surface_point))
+            intersection_list.append(util.get_intersection(s=intersection_list[-1],
+                                                           k=kout_list[-1],
+                                                           n=device.normal,
+                                                           x0=device.surface_point))
             # Find the path length
             displacement = intersection_list[-1] - intersection_list[-2]
-            path_length += np.dot(displacement, kout_list[-1]) / xraysimulationutil.l2_norm(kout_list[-1])
+            path_length += np.dot(displacement, kout_list[-1]) / util.l2_norm(kout_list[-1])
 
             # Find the output k vector
-            kout_list.append(xraysimulationutil.get_bragg_kout(kin=kout_list[-1],
-                                                               h=device.h,
-                                                               normal=device.normal))
+            kout_list.append(util.get_bragg_kout(kin=kout_list[-1],
+                                                 h=device.h,
+                                                 normal=device.normal))
 
         if device.type == "Transmissive Grating":
-            intersection_list.append(xraysimulationutil.get_intersection(initial_position=intersection_list[-1],
-                                                                         k=kout_list[-1],
-                                                                         normal=device.normal,
-                                                                         surface_point=device.surface_point))
+            intersection_list.append(util.get_intersection(s=intersection_list[-1],
+                                                           k=kout_list[-1],
+                                                           n=device.normal,
+                                                           x0=device.surface_point))
             # Find the path length
             displacement = intersection_list[-1] - intersection_list[-2]
-            path_length += np.dot(displacement, kout_list[-1]) / xraysimulationutil.l2_norm(kout_list[-1])
+            path_length += np.dot(displacement, kout_list[-1]) / util.l2_norm(kout_list[-1])
 
             # Find the wave vecotr
             kout_list.append(kout_list[-1] + device.momentum_transfer)
 
     ################################################################
     # Step 3: Find the output position on the observation plane
-    intersection_list.append(xraysimulationutil.get_intersection(initial_position=intersection_list[-1],
-                                                                 k=kout_list[-1],
-                                                                 surface_point=final_plane_point,
-                                                                 normal=final_plane_normal))
+    intersection_list.append(util.get_intersection(s=intersection_list[-1],
+                                                   k=kout_list[-1],
+                                                   x0=final_plane_point,
+                                                   n=final_plane_normal))
     # Update the path length
     displacement = intersection_list[-1] - intersection_list[-2]
-    path_length += np.dot(displacement, kout_list[-1]) / xraysimulationutil.l2_norm(kout_list[-1])
+    path_length += np.dot(displacement, kout_list[-1]) / util.l2_norm(kout_list[-1])
 
     return intersection_list, kout_list, path_length
 
@@ -141,40 +141,40 @@ def get_trajectory(device_list, kin, initial_point, final_plane_point, final_pla
         ###############################################################
         # Step 2: Find the intersection and kout
         if device.type == "Crystal: Bragg Reflection":
-            intersection_list.append(xraysimulationutil.get_intersection(initial_position=intersection_list[-1],
-                                                                         k=kout_list[-1],
-                                                                         normal=device.normal,
-                                                                         surface_point=device.surface_point))
+            intersection_list.append(util.get_intersection(s=intersection_list[-1],
+                                                           k=kout_list[-1],
+                                                           n=device.normal,
+                                                           x0=device.surface_point))
             # Find the path length
             displacement = intersection_list[-1] - intersection_list[-2]
-            path_length += np.dot(displacement, kout_list[-1]) / xraysimulationutil.l2_norm(kout_list[-1])
+            path_length += np.dot(displacement, kout_list[-1]) / util.l2_norm(kout_list[-1])
 
             # Find the output k vector
-            kout_list.append(xraysimulationutil.get_bragg_kout(kin=kout_list[-1],
-                                                               h=device.h,
-                                                               normal=device.normal))
+            kout_list.append(util.get_bragg_kout(kin=kout_list[-1],
+                                                 h=device.h,
+                                                 normal=device.normal))
 
         if device.type == "Transmissive Grating":
-            intersection_list.append(xraysimulationutil.get_intersection(initial_position=intersection_list[-1],
-                                                                         k=kout_list[-1],
-                                                                         normal=device.normal,
-                                                                         surface_point=device.surface_point))
+            intersection_list.append(util.get_intersection(s=intersection_list[-1],
+                                                           k=kout_list[-1],
+                                                           n=device.normal,
+                                                           x0=device.surface_point))
             # Find the path length
             displacement = intersection_list[-1] - intersection_list[-2]
-            path_length += np.dot(displacement, kout_list[-1]) / xraysimulationutil.l2_norm(kout_list[-1])
+            path_length += np.dot(displacement, kout_list[-1]) / util.l2_norm(kout_list[-1])
 
             # Find the wave vecotr
             kout_list.append(kout_list[-1] + device.momentum_transfer)
 
     ################################################################
     # Step 3: Find the output position on the observation plane
-    intersection_list.append(xraysimulationutil.get_intersection(initial_position=intersection_list[-1],
-                                                                 k=kout_list[-1],
-                                                                 surface_point=final_plane_point,
-                                                                 normal=final_plane_normal))
+    intersection_list.append(util.get_intersection(s=intersection_list[-1],
+                                                   k=kout_list[-1],
+                                                   x0=final_plane_point,
+                                                   n=final_plane_normal))
     # Update the path length
     displacement = intersection_list[-1] - intersection_list[-2]
-    path_length += np.dot(displacement, kout_list[-1]) / xraysimulationutil.l2_norm(kout_list[-1])
+    path_length += np.dot(displacement, kout_list[-1]) / util.l2_norm(kout_list[-1])
 
     return intersection_list, kout_list
 
@@ -201,10 +201,10 @@ def get_intensity_efficiency_sigma_polarization(device_list, kin):
         device = device_list[idx]
 
         # Get the efficiency
-        efficiency_list[idx] = xraysimulationutil.get_intensity_efficiency_sigma_polarization(device=device,
-                                                                                              kin=kout_list[idx])
+        efficiency_list[idx] = util.get_intensity_efficiency_sigma_polarization(device=device,
+                                                                                kin=kout_list[idx])
         # Get the output wave vector
-        kout_list[idx + 1] = xraysimulationutil.get_kout(device=device, kin=kout_list[idx])
+        kout_list[idx + 1] = util.get_kout(device=device, kin=kout_list[idx])
 
     # Get the overall efficiency
     total_efficiency = np.prod(efficiency_list)
