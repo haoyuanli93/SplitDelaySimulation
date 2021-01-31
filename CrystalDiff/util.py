@@ -84,6 +84,40 @@ def wave_number_to_kev(wavevec):
     return wavevec * hbar * c
 
 
+def sigma_to_fwhm(sigma):
+    return 2. * np.sqrt(2 * np.log(2)) * sigma
+
+
+def fwhm_to_sigma(fwhm):
+    return fwhm / (2. * np.sqrt(2 * np.log(2)))
+
+
+def intensity_fwhm_to_field_sigma(fwhm):
+    return fwhm / (2. * np.sqrt(2 * np.log(2))) * np.sqrt(2)
+
+
+def field_sigma_to_intensity_fwhm(sigma):
+    return sigma * (2. * np.sqrt(2 * np.log(2))) / np.sqrt(2)
+
+
+def bandwidth_sigma_kev_to_duration_sigma_fs(bandwidth_kev):
+    return hbar / 2. / bandwidth_kev
+
+
+def get_intensity_fwhm_duration_from_intensity_bandwidth(bandwidth_kev):
+    # Convert intensity bandwidth to field bandwidth
+    field_bandwidth = bandwidth_kev * np.sqrt(2)
+    field_bandwidth_sigma = fwhm_to_sigma(field_bandwidth)
+
+    # Calcualte the pulse duration
+    field_duration_sigma = bandwidth_sigma_kev_to_duration_sigma_fs(field_bandwidth_sigma)
+    field_duration_fwhm = sigma_to_fwhm(field_duration_sigma)
+
+    # Convert the field duration fwhm to intensity duration fwhm
+    intensity_duration_fwhm = field_duration_fwhm / np.sqrt(2)
+    return intensity_duration_fwhm
+
+
 # --------------------------------------------------------------
 #          Get output wave vectors
 # --------------------------------------------------------------
