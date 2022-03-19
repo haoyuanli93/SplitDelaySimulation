@@ -1,22 +1,30 @@
 # Introduction
-This is the repo for the simulation of the 
-grating-based amplitude-splitting delay line.
+This is the repo as the code base for the split-delay commissioning paper. 
 
 # Requirement
 I will not publish this repo as a python package since
-I do not think this package will be popular among users.
+this repo has complicated dependence and relies on an old package 
+which is no longer maintained.
 
-For people who would like to use this to simulate the SD device,
-please prepare the simulation environment.
+People who would like to use this to simulate the SD device,
+need to prepare the simulation environment.
 
 The critical python dependence for this package is the following:
 
 1. python >= 3.6
 2. Numba
+
+With these two, one can use the module XRaySimulation included in this repo.
+
+If one would like to run the energy efficiency calculation,
+one also needs the following package
+
 3. pyculib
 
-The other dependence is routine and super easy to solve.
-Besides, one needs an Nvidia GPU to run this simulation with this package.
+With this package, one can use the CrystalDiff module included in this repo. 
+
+The other dependence is routine and relatively to solve.
+Besides, one needs a Nvidia GPU newer than GTX1060 to run this simulation.
 
 # Unit and Definition
 The basic unit of this simulation is um, fs, and keV. 
